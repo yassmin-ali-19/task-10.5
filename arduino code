@@ -1,0 +1,36 @@
+#include <Wire.h>
+const int MPU = 0x68; 
+int16_t axisZ;
+float yaw = 0;
+unsigned long lastTime = 0;
+
+void setup() {
+  Wire.begin();
+  Serial.begin(9600);
+  Wire.beginTransmission(MPU);
+  Wire.write(0x6B); 
+  Wire.write(0);    
+  Wire.endTransmission(true);
+  Wire.beginTransmission(MPU);
+  Wire.write(0x1B); 
+  Wire.write(0x00); 
+  Wire.endTransmission(true);
+}
+
+void loop() {
+  Wire.beginTransmission(MPU);
+  Wire.write(0x43); 
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU, 6, true); 
+  int16_t axisX = Wire.read() << 8 | Wire.read();
+  int16_t axisY = Wire.read() << 8 | Wire.read();
+  axisZ = Wire.read() << 8 | Wire.read();
+  unsigned long currenttime = millis();
+  float elapsedtime = (currenttime - lasttime) / 1000.0; 
+  lasttime = currenttime;
+  yaw += (GyroZ / 131.0) * elapsedtime; 
+  Serial.print("Yaw: ");
+  Serial.println(yaw);
+  
+  delay(100);
+}
